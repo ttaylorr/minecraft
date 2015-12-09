@@ -1,0 +1,13 @@
+{
+	"ImportPath": "github.com/ttaylorr/minecraft",
+	"GoVersion": "go1.5.1",
+	"Packages": [
+		"github.com/stretchr/testify"
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/stretchr/objx",
+			"Rev": "1a9d0bb9f541897e62256577b352fdbc1fb4fd94"
+		}
+	]
+}
