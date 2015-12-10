@@ -1,4 +1,4 @@
-package protocol
+package packet
 
 // Type Packet encapsulates a raw packet sent between the Minecraft server and
 // the Minecraft client.

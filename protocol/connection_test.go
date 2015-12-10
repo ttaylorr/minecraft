@@ -1,18 +1,19 @@
-package protocol
+package protocol_test
 
 import (
 	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/ttaylorr/minecraft/protocol"
+	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
 func TestConnectionConstruction(t *testing.T) {
 	b := new(bytes.Buffer)
-	conn := NewConnection(b)
+	conn := protocol.NewConnection(b)
 
 	assert.NotNil(t, conn, "expected a *Connection object, got nil")
-	assert.Equal(t, conn.r, b, "expected Connection to have matching reader")
 }
 
 func TestPacketReading(t *testing.T) {
@@ -22,12 +23,12 @@ func TestPacketReading(t *testing.T) {
 	}
 
 	r := bytes.NewReader(p)
-	c := NewConnection(r)
+	c := protocol.NewConnection(r)
 
-	packet, err := c.Next()
+	next, err := c.Next()
 
 	assert.Nil(t, err)
-	assert.Equal(t, packet.ID, 0)
-	assert.Equal(t, packet.Direction, DirectionServerbound)
-	assert.Equal(t, packet.Data, p[2:])
+	assert.Equal(t, next.ID, 0)
+	assert.Equal(t, next.Direction, packet.DirectionServerbound)
+	assert.Equal(t, next.Data, p[2:])
 }

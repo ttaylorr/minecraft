@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+
+	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
 var (
@@ -38,7 +40,7 @@ func NewConnection(r io.Reader) *Connection {
 //
 // If an error is experienced in reading the packet from the io.Reader `r`, then
 // a nil pointer will be returned and the error will be propogated up.
-func (c *Connection) Next() (*Packet, error) {
+func (c *Connection) Next() (*packet.Packet, error) {
 	r := bufio.NewReader(c.r)
 
 	size, err := binary.ReadUvarint(r)
@@ -57,9 +59,9 @@ func (c *Connection) Next() (*Packet, error) {
 
 	id, offset := binary.Uvarint(buffer)
 
-	return &Packet{
+	return &packet.Packet{
 		ID:        int(id),
-		Direction: DirectionServerbound,
+		Direction: packet.DirectionServerbound,
 		Data:      buffer[offset:],
 	}, nil
 }
