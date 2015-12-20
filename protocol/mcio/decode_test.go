@@ -1,4 +1,4 @@
-package decode_test
+package mcio_test
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/ttaylorr/minecraft/protocol"
-	"github.com/ttaylorr/minecraft/protocol/decode"
-	"github.com/ttaylorr/minecraft/protocol/decode/types"
+	"github.com/ttaylorr/minecraft/protocol/mcio"
+	"github.com/ttaylorr/minecraft/protocol/mcio/types"
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
@@ -18,7 +18,7 @@ func TestGettingFieldTypes(t *testing.T) {
 	}{})
 	field := v.Field(0)
 
-	assert.Equal(t, decode.FieldType(field), "string")
+	assert.Equal(t, mcio.FieldType(field), "string")
 }
 
 func TestGettingFieldDecoder(t *testing.T) {
@@ -27,7 +27,7 @@ func TestGettingFieldDecoder(t *testing.T) {
 	}{})
 	field := v.Field(0)
 
-	assert.Equal(t, types.GetType("string"), decode.GetFieldType(field))
+	assert.Equal(t, types.GetType("string"), mcio.GetFieldType(field))
 }
 
 func TestSettingFieldValue(t *testing.T) {
@@ -36,7 +36,7 @@ func TestSettingFieldValue(t *testing.T) {
 	}{}).Elem()
 
 	assert.Equal(t, v.Field(0).Interface(), "")
-	decode.SetFieldValue(v, 0, "some string")
+	mcio.SetFieldValue(v, 0, "some string")
 	assert.Equal(t, v.Field(0).Interface(), "some string")
 }
 

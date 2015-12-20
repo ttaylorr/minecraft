@@ -6,7 +6,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/ttaylorr/minecraft/protocol/decode"
+	"github.com/ttaylorr/minecraft/protocol/mcio"
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
@@ -31,7 +31,7 @@ func (c *Connection) Next() (interface{}, error) {
 		return nil, err
 	}
 
-	return decode.Decode(p)
+	return mcio.Decode(p)
 }
 
 // Next reads and decodes the next Packet on the stream. Packets are expected to

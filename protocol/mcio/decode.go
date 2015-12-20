@@ -1,10 +1,10 @@
-package decode
+package mcio
 
 import (
 	"bytes"
 	"reflect"
 
-	"github.com/ttaylorr/minecraft/protocol/decode/types"
+	"github.com/ttaylorr/minecraft/protocol/mcio/types"
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
