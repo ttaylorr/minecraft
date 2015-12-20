@@ -12,31 +12,40 @@ import (
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
+func TestNew(t *testing.T) {
+	d := mcio.NewDecoder()
+	assert.IsType(t, d, &mcio.Decoder{})
+}
+
 func TestGettingFieldTypes(t *testing.T) {
 	v := reflect.TypeOf(struct {
 		SomeField string `type:"string"`
 	}{})
 	field := v.Field(0)
 
-	assert.Equal(t, mcio.FieldType(field), "string")
+	d := mcio.NewDecoder()
+
+	assert.Equal(t, d.FieldType(field), "string")
 }
 
 func TestGettingFieldDecoder(t *testing.T) {
+	d := mcio.NewDecoder()
 	v := reflect.TypeOf(struct {
 		SomeField string `type:"string"`
 	}{})
 	field := v.Field(0)
 
-	assert.Equal(t, types.GetType("string"), mcio.GetFieldType(field))
+	assert.Equal(t, types.GetType("string"), d.GetFieldType(field))
 }
 
 func TestSettingFieldValue(t *testing.T) {
+	d := mcio.NewDecoder()
 	v := reflect.ValueOf(&struct {
 		SomeField string `type:"string"`
 	}{}).Elem()
 
 	assert.Equal(t, v.Field(0).Interface(), "")
-	mcio.SetFieldValue(v, 0, "some string")
+	d.SetFieldValue(v, 0, "some string")
 	assert.Equal(t, v.Field(0).Interface(), "some string")
 }
 
