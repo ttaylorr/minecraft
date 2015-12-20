@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 )
 
-func UVarintDecoder(r *bytes.Buffer) (interface{}, error) {
+type Uvarint struct{}
+
+func (u Uvarint) Decode(r *bytes.Buffer) (interface{}, error) {
 	return binary.ReadUvarint(r)
 }

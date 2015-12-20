@@ -10,7 +10,9 @@ var (
 	ErrorMismatchedStringLength = errors.New("fewer bytes available than string length")
 )
 
-func StringDecoder(r *bytes.Buffer) (interface{}, error) {
+type String struct{}
+
+func (s String) Decode(r *bytes.Buffer) (interface{}, error) {
 	size, err := binary.ReadUvarint(r)
 	if err != nil {
 		return nil, err

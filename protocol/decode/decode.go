@@ -9,15 +9,18 @@ import (
 )
 
 var (
-	Decoders = map[string]Decoder{
-		"varint":  types.VarintDecoder,
-		"uvarint": types.UVarintDecoder,
-		"string":  types.StringDecoder,
-		"ushort":  types.UnsignedShortDecoder,
+	Types = map[string]Type{
+		"varint":  types.Varint{},
+		"uvarint": types.Uvarint{},
+		"string":  types.String{},
+		"ushort":  types.Ushort{},
 	}
 )
 
-type Decoder func(r *bytes.Buffer) (interface{}, error)
+type Type interface {
+	Decode(r *bytes.Buffer) (interface{}, error)
+	// Encode(v interface{}) []byte
+}
 
 func Decode(p *packet.Packet) (interface{}, error) {
 	typ, val := NewPacket(p.ID)
@@ -39,8 +42,8 @@ func NewPacket(id int) (reflect.Type, reflect.Value) {
 }
 
 func DecodeField(typ reflect.Type, val reflect.Value, field int, r *bytes.Buffer) error {
-	decoder := GetFieldDecoder(typ.Field(field))
-	decoded, err := decoder(r)
+	ftype := GetFieldType(typ.Field(field))
+	decoded, err := ftype.Decode(r)
 	if err != nil {
 		return err
 	}
@@ -55,8 +58,8 @@ func SetFieldValue(holder reflect.Value, field int, value interface{}) {
 	holder.Field(field).Set(v)
 }
 
-func GetFieldDecoder(field reflect.StructField) Decoder {
-	return Decoders[FieldType(field)]
+func GetFieldType(field reflect.StructField) Type {
+	return Types[FieldType(field)]
 }
 
 func FieldType(field reflect.StructField) string {

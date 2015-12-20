@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 )
 
-func VarintDecoder(r *bytes.Buffer) (interface{}, error) {
+type Varint struct{}
+
+func (v Varint) Decode(r *bytes.Buffer) (interface{}, error) {
 	return binary.ReadVarint(r)
 }

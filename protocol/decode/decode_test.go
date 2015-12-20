@@ -26,13 +26,7 @@ func TestGettingFieldDecoder(t *testing.T) {
 	}{})
 	field := v.Field(0)
 
-	// Since we can't compare check for func equality in Golang directly, we
-	// have to compare the pointer values by using the `reflect` package
-	// instead.
-	expected := _getPointerValue(decode.Decoders["string"])
-	actual := _getPointerValue(decode.GetFieldDecoder(field))
-
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, decode.Types["string"], decode.GetFieldType(field))
 }
 
 func TestSettingFieldValue(t *testing.T) {
@@ -65,8 +59,4 @@ func TestPacketDecoding(t *testing.T) {
 	assert.Equal(t, hsk.ServerAddress, "localhdst")
 	assert.Equal(t, hsk.ServerPort, uint16(25565))
 	assert.Equal(t, hsk.NextState, uint64(1))
-}
-
-func _getPointerValue(fn interface{}) uintptr {
-	return reflect.ValueOf(fn).Pointer()
 }
