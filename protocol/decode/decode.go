@@ -8,20 +8,6 @@ import (
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
-var (
-	Types = map[string]Type{
-		"varint":  types.Varint{},
-		"uvarint": types.Uvarint{},
-		"string":  types.String{},
-		"ushort":  types.Ushort{},
-	}
-)
-
-type Type interface {
-	Decode(r *bytes.Buffer) (interface{}, error)
-	// Encode(v interface{}) []byte
-}
-
 func Decode(p *packet.Packet) (interface{}, error) {
 	typ, val := NewPacket(p.ID)
 	r := bytes.NewBuffer(p.Data)
@@ -58,8 +44,8 @@ func SetFieldValue(holder reflect.Value, field int, value interface{}) {
 	holder.Field(field).Set(v)
 }
 
-func GetFieldType(field reflect.StructField) Type {
-	return Types[FieldType(field)]
+func GetFieldType(field reflect.StructField) types.Type {
+	return types.GetType(FieldType(field))
 }
 
 func FieldType(field reflect.StructField) string {

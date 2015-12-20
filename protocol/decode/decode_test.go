@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/ttaylorr/minecraft/protocol"
 	"github.com/ttaylorr/minecraft/protocol/decode"
+	"github.com/ttaylorr/minecraft/protocol/decode/types"
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
@@ -26,7 +27,7 @@ func TestGettingFieldDecoder(t *testing.T) {
 	}{})
 	field := v.Field(0)
 
-	assert.Equal(t, decode.Types["string"], decode.GetFieldType(field))
+	assert.Equal(t, types.GetType("string"), decode.GetFieldType(field))
 }
 
 func TestSettingFieldValue(t *testing.T) {
