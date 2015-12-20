@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/ttaylorr/minecraft/protocol/decode"
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
@@ -24,6 +25,15 @@ func NewConnection(r io.Reader) *Connection {
 	return &Connection{r: r}
 }
 
+func (c *Connection) Next() (interface{}, error) {
+	p, err := c.packet()
+	if err != nil {
+		return nil, err
+	}
+
+	return decode.Decode(p)
+}
+
 // Next reads and decodes the next Packet on the stream. Packets are expected to
 // be in the following format (as described on
 // http://wiki.vg/Protocol#Without_compression:
@@ -40,7 +50,7 @@ func NewConnection(r io.Reader) *Connection {
 //
 // If an error is experienced in reading the packet from the io.Reader `r`, then
 // a nil pointer will be returned and the error will be propogated up.
-func (c *Connection) Next() (*packet.Packet, error) {
+func (c *Connection) packet() (*packet.Packet, error) {
 	r := bufio.NewReader(c.r)
 
 	size, err := binary.ReadUvarint(r)

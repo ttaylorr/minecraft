@@ -17,3 +17,10 @@ type Packet struct {
 	// the packet itself.
 	Data []byte
 }
+
+type Direction int
+
+const (
+	DirectionServerbound Direction = iota
+	DirectionClientbound
+)
