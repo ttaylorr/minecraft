@@ -8,6 +8,16 @@ import (
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
+// type Decoder struct {
+//   Rules []Rule
+// }
+//
+// type Rule interface {
+//   AppliesTo(v interface{}) bool
+//   Decode(r io.Reader) (v interface{}, err error)
+//   Encode(v interface{}) (b []byte, err error)
+// }
+
 type Decoder struct{}
 
 func NewDecoder() *Decoder {
