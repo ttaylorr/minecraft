@@ -1,18 +1,23 @@
-package types
+package protocol
 
 import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"reflect"
 )
 
 var (
 	ErrorMismatchedStringLength = errors.New("fewer bytes available than string length")
 )
 
-type String struct{}
+type StringRule struct{}
 
-func (s String) Decode(r *bytes.Buffer) (interface{}, error) {
+func (sr StringRule) AppliesTo(typ reflect.Type) bool {
+	return typ.Kind() == reflect.String
+}
+
+func (sr StringRule) Decode(r *bytes.Buffer) (interface{}, error) {
 	size, err := binary.ReadUvarint(r)
 	if err != nil {
 		return nil, err
@@ -26,4 +31,5 @@ func (s String) Decode(r *bytes.Buffer) (interface{}, error) {
 	}
 
 	return string(str), nil
+
 }
