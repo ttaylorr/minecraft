@@ -1,7 +1,6 @@
 package protocol_test
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -40,7 +39,6 @@ func TestPacketDecoding(t *testing.T) {
 	}
 
 	v, err := d.Decode(p)
-	fmt.Println(v, err)
 
 	assert.Nil(t, err)
 	hsk, _ := v.(packet.Handshake)
