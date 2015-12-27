@@ -25,6 +25,7 @@ func NewDealer(rules ...rule.Rule) *Dealer {
 // with all default and available `Rule`s.
 func DefaultDealer() *Dealer {
 	return NewDealer(
+		rule.LongRule{},
 		rule.StringRule{},
 		rule.UshortRule{},
 		rule.UvarintRule{},

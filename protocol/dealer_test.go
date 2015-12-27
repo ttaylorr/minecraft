@@ -26,7 +26,7 @@ func TestDecoderInitialization(t *testing.T) {
 func TestDefaultDecoderInitialization(t *testing.T) {
 	d := protocol.DefaultDealer()
 	assert.IsType(t, d, &protocol.Dealer{})
-	assert.Len(t, d.Rules, 4)
+	assert.Len(t, d.Rules, 5)
 }
 
 func TestPacketDecoding(t *testing.T) {
