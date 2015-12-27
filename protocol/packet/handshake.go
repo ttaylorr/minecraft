@@ -6,3 +6,7 @@ type Handshake struct {
 	ServerPort      uint16
 	NextState       uint64
 }
+
+func (h Handshake) ID() int {
+	return 0x00
+}

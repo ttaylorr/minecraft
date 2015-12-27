@@ -15,14 +15,14 @@ var (
 
 // Connection represents a uni-directional connection from client to server.
 type Connection struct {
-	d *Decoder
+	d *Dealer
 	r io.Reader
 }
 
 // NewConnection serves as the builder function for type Connection. It takes in
 // a reader which, when read from, yeilds data sent by the "client".
 func NewConnection(r io.Reader) *Connection {
-	return &Connection{d: NewDecoder(), r: r}
+	return &Connection{d: DefaultDealer(), r: r}
 }
 
 func (c *Connection) Next() (interface{}, error) {

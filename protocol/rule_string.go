@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"reflect"
+
+	"github.com/ttaylorr/minecraft/util"
 )
 
 var (
@@ -31,5 +33,19 @@ func (sr StringRule) Decode(r *bytes.Buffer) (interface{}, error) {
 	}
 
 	return string(str), nil
+}
 
+func (sr StringRule) Encode(v interface{}) ([]byte, error) {
+	str, ok := v.(string)
+	if !ok {
+		return nil, ErrorMismatchedType("string", v)
+	}
+
+	buf := new(bytes.Buffer)
+	length := util.Uvarint(uint64(len(str)))
+
+	buf.Write(length)
+	buf.Write([]byte(str))
+
+	return buf.Bytes(), nil
 }
