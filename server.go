@@ -2,20 +2,26 @@ package main
 
 import (
 	"io"
+	"log"
 	"math/rand"
-	"net"
 
 	"github.com/ttaylorr/minecraft/chat"
 	"github.com/ttaylorr/minecraft/protocol"
 	"github.com/ttaylorr/minecraft/protocol/packet"
+	"github.com/ttaylorr/minecraft/server"
 )
 
 func main() {
-	conn, _ := net.Listen("tcp", "0.0.0.0:25565")
-	for {
-		client, _ := conn.Accept()
-		go handleConnection(protocol.NewConnection(client))
+	server, err := server.New(25565)
+	if err != nil {
+		panic(err)
 	}
+
+	if err := server.Start(); err != nil {
+		panic(err)
+	}
+
+	log.Fatalf("Shutting down gracefully...")
 }
 
 func handleConnection(c *protocol.Connection) {
@@ -50,6 +56,7 @@ func handleConnection(c *protocol.Connection) {
 			pong.Payload = t.Payload
 
 			c.Write(pong)
+			return
 		}
 	}
 }
