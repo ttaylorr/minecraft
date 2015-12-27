@@ -11,18 +11,19 @@ import (
 type UvarintRule struct{}
 
 func (u UvarintRule) AppliesTo(typ reflect.Type) bool {
-	return typ.Kind() == reflect.Uint64
+	return typ.Kind() == reflect.Uint32
 }
 
 func (u UvarintRule) Decode(r *bytes.Buffer) (interface{}, error) {
-	return binary.ReadUvarint(r)
+	i, err := binary.ReadUvarint(r)
+	return uint32(i), err
 }
 
 func (u UvarintRule) Encode(v interface{}) ([]byte, error) {
-	u64, ok := v.(uint64)
+	u32, ok := v.(uint32)
 	if !ok {
-		return nil, ErrorMismatchedType("uint64", v)
+		return nil, ErrorMismatchedType("uint32", v)
 	}
 
-	return util.Uvarint(u64), nil
+	return util.Uvarint(u32), nil
 }

@@ -46,18 +46,18 @@ func TestPacketDecoding(t *testing.T) {
 
 	assert.IsType(t, hsk, packet.Handshake{})
 
-	assert.Equal(t, hsk.ProtocolVersion, uint64(47))
+	assert.Equal(t, hsk.ProtocolVersion, uint32(47))
 	assert.Equal(t, hsk.ServerAddress, "localhdst")
 	assert.Equal(t, hsk.ServerPort, uint16(25565))
-	assert.Equal(t, hsk.NextState, uint64(1))
+	assert.Equal(t, hsk.NextState, uint32(1))
 }
 
 func TestPacketEncoding(t *testing.T) {
 	handshake := packet.Handshake{
-		ProtocolVersion: uint64(47),
+		ProtocolVersion: uint32(47),
 		ServerAddress:   "localhdst",
 		ServerPort:      uint16(25565),
-		NextState:       uint64(1),
+		NextState:       uint32(1),
 	}
 
 	d := protocol.DefaultDealer()

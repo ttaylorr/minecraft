@@ -11,18 +11,19 @@ import (
 type VarintRule struct{}
 
 func (v VarintRule) AppliesTo(typ reflect.Type) bool {
-	return typ.Kind() == reflect.Int64
+	return typ.Kind() == reflect.Int32
 }
 
 func (v VarintRule) Decode(r *bytes.Buffer) (interface{}, error) {
-	return binary.ReadVarint(r)
+	i, err := binary.ReadVarint(r)
+	return int32(i), err
 }
 
 func (u VarintRule) Encode(v interface{}) ([]byte, error) {
-	i64, ok := v.(int64)
+	i32, ok := v.(int32)
 	if !ok {
-		return nil, ErrorMismatchedType("int64", v)
+		return nil, ErrorMismatchedType("int32", v)
 	}
 
-	return util.Varint(i64), nil
+	return util.Varint(i32), nil
 }

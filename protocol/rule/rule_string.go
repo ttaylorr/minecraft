@@ -42,7 +42,7 @@ func (sr StringRule) Encode(v interface{}) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	length := util.Uvarint(uint64(len(str)))
+	length := util.Uvarint(uint32(len(str)))
 
 	buf.Write(length)
 	buf.Write([]byte(str))

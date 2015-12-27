@@ -70,7 +70,7 @@ func (d *Dealer) Decode(p *packet.Packet) (v interface{}, err error) {
 // error will be returned.
 func (d *Dealer) Encode(h packet.Holder) ([]byte, error) {
 	out := new(bytes.Buffer)
-	out.Write(util.Uvarint(uint64(h.ID())))
+	out.Write(util.Uvarint(uint32(h.ID())))
 
 	v := reflect.ValueOf(h)
 
@@ -87,7 +87,7 @@ func (d *Dealer) Encode(h packet.Holder) ([]byte, error) {
 	}
 
 	return append(
-		util.Uvarint(uint64(out.Len())),
+		util.Uvarint(uint32(out.Len())),
 		out.Bytes()...,
 	), nil
 }

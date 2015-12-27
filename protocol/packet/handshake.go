@@ -1,10 +1,10 @@
 package packet
 
 type Handshake struct {
-	ProtocolVersion uint64
+	ProtocolVersion uint32
 	ServerAddress   string
 	ServerPort      uint16
-	NextState       uint64
+	NextState       uint32
 }
 
 func (h Handshake) ID() int {
