@@ -73,7 +73,7 @@ func (c *Connection) packet() (*packet.Packet, error) {
 
 	// TODO(ttaylorr): extract this to a package `util`
 	buffer := make([]byte, size)
-	read, err := r.Read(buffer)
+	read, err := io.ReadAtLeast(r, buffer, int(size))
 	if err != nil {
 		return nil, err
 	} else if read < int(size) {
