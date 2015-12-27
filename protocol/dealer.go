@@ -5,18 +5,19 @@ import (
 	"reflect"
 
 	"github.com/ttaylorr/minecraft/protocol/packet"
+	"github.com/ttaylorr/minecraft/protocol/rule"
 	"github.com/ttaylorr/minecraft/util"
 )
 
 // A Dealer manages a set of `Rule`s and is able to decode and encode arbitrary
 // data by finding and using applicable rules.
 type Dealer struct {
-	Rules []Rule
+	Rules []rule.Rule
 }
 
 // NewDealer creates and returns a pointer to a new Dealer, initialized with
 // all of the `Rule`s passed to it.
-func NewDealer(rules ...Rule) *Dealer {
+func NewDealer(rules ...rule.Rule) *Dealer {
 	return &Dealer{Rules: rules}
 }
 
@@ -24,10 +25,10 @@ func NewDealer(rules ...Rule) *Dealer {
 // with all default and available `Rule`s.
 func DefaultDealer() *Dealer {
 	return NewDealer(
-		StringRule{},
-		UshortRule{},
-		UvarintRule{},
-		VarintRule{},
+		rule.StringRule{},
+		rule.UshortRule{},
+		rule.UvarintRule{},
+		rule.VarintRule{},
 	)
 }
 
@@ -94,7 +95,7 @@ func (d *Dealer) Encode(h packet.Holder) ([]byte, error) {
 // GetRule finds the first matching rule given a particular type. It queries the
 // `Rule#AppliesTo` method and returns the first matching one. If no matching
 // `Rule`s are found, a value of `nil` is returned instead.
-func (d *Dealer) GetRule(typ reflect.Type) Rule {
+func (d *Dealer) GetRule(typ reflect.Type) rule.Rule {
 	for _, rule := range d.Rules {
 		if !rule.AppliesTo(typ) {
 			continue

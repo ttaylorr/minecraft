@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/ttaylorr/minecraft/protocol"
 	"github.com/ttaylorr/minecraft/protocol/packet"
+	"github.com/ttaylorr/minecraft/protocol/rule"
 )
 
 func TestDecoderInitialization(t *testing.T) {
@@ -16,10 +17,10 @@ func TestDecoderInitialization(t *testing.T) {
 	assert.IsType(t, d, &protocol.Dealer{})
 	assert.Empty(t, d.Rules)
 
-	d = protocol.NewDealer(protocol.StringRule{})
+	d = protocol.NewDealer(rule.StringRule{})
 	assert.IsType(t, d, &protocol.Dealer{})
 	assert.Len(t, d.Rules, 1)
-	assert.Equal(t, d.Rules[0], protocol.StringRule{})
+	assert.Equal(t, d.Rules[0], rule.StringRule{})
 }
 
 func TestDefaultDecoderInitialization(t *testing.T) {
@@ -85,7 +86,7 @@ func TestFindingHolderWithInvalidID(t *testing.T) {
 }
 
 func TestFindingSingleMatchingRule(t *testing.T) {
-	rule := &protocol.StringRule{}
+	rule := &rule.StringRule{}
 	d := protocol.NewDealer(rule)
 
 	typ := reflect.TypeOf(struct {
