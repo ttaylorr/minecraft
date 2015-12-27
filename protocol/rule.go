@@ -7,8 +7,8 @@ import (
 )
 
 // A Rule represents a particular decoding method, usually bound to a type. It
-// gives information regarding how to decode ~~(and encode)~~ a particular piece
-// of data ~~to and~~ from a `*bytes.Buffer`.
+// gives information regarding how to decode and encode a particular piece
+// of data to and from a `*bytes.Buffer`.
 //
 // Only after a call to the `AppliesTo` method returns true can it be said that
 // the Rule is allowed to work on a given value.
@@ -22,6 +22,7 @@ type Rule interface {
 	// func (r RuleImpl) AppliesTo(typ reflect.Type) bool {
 	//     return typ.Kind == reflect.SomeKind
 	// }
+	// ```
 	AppliesTo(typ reflect.Type) bool
 
 	// Decode reads from the given *bytes.Buffer and returns the decoded
