@@ -2,7 +2,9 @@ package protocol
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
+	"sync"
 
 	"github.com/ttaylorr/minecraft/protocol/packet"
 	"github.com/ttaylorr/minecraft/protocol/rule"
@@ -12,6 +14,9 @@ import (
 // A Dealer manages a set of `Rule`s and is able to decode and encode arbitrary
 // data by finding and using applicable rules.
 type Dealer struct {
+	State State
+	smu   sync.RWMutex
+
 	Rules []rule.Rule
 }
 
@@ -30,7 +35,15 @@ func DefaultDealer() *Dealer {
 		rule.UshortRule{},
 		rule.UvarintRule{},
 		rule.VarintRule{},
+		rule.JsonRule{},
 	)
+}
+
+func (d *Dealer) SetState(s State) {
+	d.smu.Lock()
+	defer d.smu.Unlock()
+
+	d.State = s
 }
 
 // Decode decodes a packet coming from the client (sent to the server) into a
@@ -79,6 +92,10 @@ func (d *Dealer) Encode(h packet.Holder) ([]byte, error) {
 		fval := v.Field(i)
 
 		rule := d.GetRule(fval.Type())
+		if rule == nil {
+			return nil, fmt.Errorf("no encoder available for type %s", fval.Type())
+		}
+
 		encoded, err := rule.Encode(fval.Interface())
 		if err != nil {
 			return nil, err
@@ -111,5 +128,8 @@ func (d *Dealer) GetRule(typ reflect.Type) rule.Rule {
 // GetHolderType returns the `reflect.Type` associated with a particular packet
 // sent to the server (from the client).
 func (d *Dealer) GetHolderType(p *packet.Packet) reflect.Type {
-	return packet.Packets[p.ID]
+	d.smu.RLock()
+	defer d.smu.RUnlock()
+
+	return GetPacket(p.Direction, d.State, p.ID)
 }

@@ -15,14 +15,18 @@ var (
 
 // Connection represents a uni-directional connection from client to server.
 type Connection struct {
-	d *Dealer
-	r io.Reader
+	d  *Dealer
+	rw io.ReadWriter
 }
 
 // NewConnection serves as the builder function for type Connection. It takes in
 // a reader which, when read from, yeilds data sent by the "client".
-func NewConnection(r io.Reader) *Connection {
-	return &Connection{d: DefaultDealer(), r: r}
+func NewConnection(rw io.ReadWriter) *Connection {
+	return &Connection{d: DefaultDealer(), rw: rw}
+}
+
+func (c *Connection) SetState(state State) {
+	c.d.SetState(state)
 }
 
 func (c *Connection) Next() (interface{}, error) {
@@ -32,6 +36,15 @@ func (c *Connection) Next() (interface{}, error) {
 	}
 
 	return c.d.Decode(p)
+}
+
+func (c *Connection) Write(h packet.Holder) (int, error) {
+	data, err := c.d.Encode(h)
+	if err != nil {
+		return -1, nil
+	}
+
+	return c.rw.Write(data)
 }
 
 // Next reads and decodes the next Packet on the stream. Packets are expected to
@@ -51,7 +64,7 @@ func (c *Connection) Next() (interface{}, error) {
 // If an error is experienced in reading the packet from the io.Reader `r`, then
 // a nil pointer will be returned and the error will be propogated up.
 func (c *Connection) packet() (*packet.Packet, error) {
-	r := bufio.NewReader(c.r)
+	r := bufio.NewReader(c.rw)
 
 	size, err := binary.ReadUvarint(r)
 	if err != nil {

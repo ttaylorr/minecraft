@@ -21,7 +21,7 @@ func TestPacketReading(t *testing.T) {
 		0x6c, 0x68, 0x64, 0x73, 0x74, 0x63, 0xdd, 0x01,
 	}
 
-	r := bytes.NewReader(p)
+	r := bytes.NewBuffer(p)
 	c := NewConnection(r)
 
 	next, err := c.packet()
