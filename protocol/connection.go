@@ -22,7 +22,7 @@ type Connection struct {
 // NewConnection serves as the builder function for type Connection. It takes in
 // a reader which, when read from, yeilds data sent by the "client".
 func NewConnection(rw io.ReadWriter) *Connection {
-	return &Connection{d: DefaultDealer(), rw: rw}
+	return &Connection{d: NewDealer(), rw: rw}
 }
 
 func (c *Connection) SetState(state State) {

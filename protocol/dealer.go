@@ -2,12 +2,11 @@ package protocol
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 	"sync"
 
 	"github.com/ttaylorr/minecraft/protocol/packet"
-	"github.com/ttaylorr/minecraft/protocol/rule"
+	"github.com/ttaylorr/minecraft/protocol/types"
 	"github.com/ttaylorr/minecraft/util"
 )
 
@@ -16,27 +15,11 @@ import (
 type Dealer struct {
 	State State
 	smu   sync.RWMutex
-
-	Rules []rule.Rule
 }
 
-// NewDealer creates and returns a pointer to a new Dealer, initialized with
-// all of the `Rule`s passed to it.
-func NewDealer(rules ...rule.Rule) *Dealer {
-	return &Dealer{Rules: rules}
-}
-
-// DefaultDealer creates and returns a pointer to a new Dealer, initalized
-// with all default and available `Rule`s.
-func DefaultDealer() *Dealer {
-	return NewDealer(
-		rule.LongRule{},
-		rule.StringRule{},
-		rule.UshortRule{},
-		rule.UvarintRule{},
-		rule.VarintRule{},
-		rule.JsonRule{},
-	)
+// NewDealer creates and returns a pointer to a new Dealer
+func NewDealer() *Dealer {
+	return &Dealer{}
 }
 
 func (d *Dealer) SetState(s State) {
@@ -52,21 +35,24 @@ func (d *Dealer) SetState(s State) {
 // data is decoded off of the stream and initialized into the corresponding
 // field. If no matching decoder is found, an error is returned.
 func (d *Dealer) Decode(p *packet.Packet) (v interface{}, err error) {
-	typ := d.GetHolderType(p)
-	inst := reflect.New(typ).Elem()
+	inst := reflect.New(d.GetHolderType(p)).Elem()
 
 	data := bytes.NewBuffer(p.Data)
 
-	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-		rule := d.GetRule(field.Type)
+	for i := 0; i < inst.NumField(); i++ {
+		f := inst.Field(i)
 
-		decoded, err := rule.Decode(data)
+		typ, ok := f.Interface().(types.Type)
+		if !ok {
+			continue
+		}
+
+		v, err := typ.Decode(data)
 		if err != nil {
 			return nil, err
 		}
 
-		inst.Field(i).Set(reflect.ValueOf(decoded))
+		f.Set(reflect.ValueOf(v))
 	}
 
 	return inst.Interface(), nil
@@ -89,40 +75,21 @@ func (d *Dealer) Encode(h packet.Holder) ([]byte, error) {
 	v := reflect.ValueOf(h)
 
 	for i := 0; i < v.NumField(); i++ {
-		fval := v.Field(i)
-
-		rule := d.GetRule(fval.Type())
-		if rule == nil {
-			return nil, fmt.Errorf("no encoder available for type %s", fval.Type())
+		ftype, ok := v.Field(i).Interface().(types.Type)
+		if !ok {
+			// XXX(taylor): special-casing
+			ftype = types.JSON{V: v.Field(i).Interface()}
 		}
 
-		encoded, err := rule.Encode(fval.Interface())
-		if err != nil {
+		if _, err := ftype.Encode(out); err != nil {
 			return nil, err
 		}
-
-		out.Write(encoded)
 	}
 
 	return append(
 		util.Uvarint(uint32(out.Len())),
 		out.Bytes()...,
 	), nil
-}
-
-// GetRule finds the first matching rule given a particular type. It queries the
-// `Rule#AppliesTo` method and returns the first matching one. If no matching
-// `Rule`s are found, a value of `nil` is returned instead.
-func (d *Dealer) GetRule(typ reflect.Type) rule.Rule {
-	for _, rule := range d.Rules {
-		if !rule.AppliesTo(typ) {
-			continue
-		}
-
-		return rule
-	}
-
-	return nil
 }
 
 // GetHolderType returns the `reflect.Type` associated with a particular packet

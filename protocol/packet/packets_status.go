@@ -1,13 +1,13 @@
 package packet
 
-import "github.com/ttaylorr/minecraft/chat"
+import (
+	"github.com/ttaylorr/minecraft/chat"
+	"github.com/ttaylorr/minecraft/protocol/types"
+)
 
-type StatusRequest struct {
-}
+type StatusRequest struct{}
 
-func (r *StatusRequest) ID() int {
-	return 0x00
-}
+func (r *StatusRequest) ID() int { return 0x00 }
 
 type StatusResponse struct {
 	Status struct {
@@ -25,22 +25,16 @@ type StatusResponse struct {
 	}
 }
 
-func (r StatusResponse) ID() int {
-	return 0x00
-}
+func (r StatusResponse) ID() int { return 0x00 }
 
 type StatusPing struct {
-	Payload int64
+	Payload types.Long
 }
 
-func (p StatusPing) ID() int {
-	return 0x01
-}
+func (p StatusPing) ID() int { return 0x01 }
 
 type StatusPong struct {
-	Payload int64
+	Payload types.Long
 }
 
-func (p StatusPong) ID() int {
-	return 0x01
-}
+func (p StatusPong) ID() int { return 0x01 }

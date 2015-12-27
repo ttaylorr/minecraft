@@ -1,9 +1,9 @@
-package rule
+package types
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"reflect"
 )
 
@@ -17,30 +17,18 @@ var (
 //
 // Only after a call to the `AppliesTo` method returns true can it be said that
 // the Rule is allowed to work on a given value.
-type Rule interface {
-	// AppliesTo predicates which type(s) a particular rule can work upon.
-	//
-	// Typically AppliesTo only passes for a single type, and it is usually
-	// implemented as:
-	//
-	// ```go
-	// func (r RuleImpl) AppliesTo(typ reflect.Type) bool {
-	//     return typ.Kind == reflect.SomeKind
-	// }
-	// ```
-	AppliesTo(typ reflect.Type) bool
-
+type Type interface {
 	// Decode reads from the given *bytes.Buffer and returns the decoded
 	// contents of a single field of data. If an error is encountered during
 	// read-time, or if the data is invalid post read-time, an error will be
 	// thrown.
-	Decode(r *bytes.Buffer) (interface{}, error)
+	Decode(r io.Reader) (interface{}, error)
 
 	// Encode turns a Go type instance into some bytes packed together in
 	// a []byte. If the data is the wrong type, an error will be thrown. If
 	// the data is un-encodable, or an error occurs while encoding, the
 	// error will be thrown.
-	Encode(v interface{}) ([]byte, error)
+	Encode(w io.Writer) (int, error)
 }
 
 func ErrorMismatchedType(expected string, actual interface{}) error {
