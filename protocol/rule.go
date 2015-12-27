@@ -2,8 +2,13 @@ package protocol
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"reflect"
+)
+
+var (
+	ByteOrder = binary.BigEndian
 )
 
 // A Rule represents a particular decoding method, usually bound to a type. It

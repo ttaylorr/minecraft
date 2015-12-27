@@ -2,12 +2,7 @@ package protocol
 
 import (
 	"bytes"
-	"encoding/binary"
 	"reflect"
-)
-
-var (
-	ByteOrder = binary.BigEndian
 )
 
 type UshortRule struct{}
