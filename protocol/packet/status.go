@@ -1,5 +1,7 @@
 package packet
 
+import "github.com/ttaylorr/minecraft/chat"
+
 type StatusRequest struct {
 }
 
@@ -19,9 +21,7 @@ type StatusResponse struct {
 			Online int `json:"online"`
 		} `json:"players"`
 
-		Description struct {
-			Text string `json:"text"`
-		} `json:"description"`
+		Description chat.TextComponent `json:"description"`
 	}
 }
 

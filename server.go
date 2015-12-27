@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net"
 
+	"github.com/ttaylorr/minecraft/chat"
 	"github.com/ttaylorr/minecraft/protocol"
 	"github.com/ttaylorr/minecraft/protocol/packet"
 )
@@ -34,7 +35,14 @@ func handleConnection(c *protocol.Connection) {
 			resp.Status.Version.Protocol = 47
 			resp.Status.Players.Max = rand.Intn(100)
 			resp.Status.Players.Online = rand.Intn(101)
-			resp.Status.Description.Text = "Hello from Golang!"
+			resp.Status.Description = chat.TextComponent{
+				"Hello from Golang!",
+
+				chat.Component{
+					Bold:  true,
+					Color: chat.ColorRed,
+				},
+			}
 
 			c.Write(resp)
 		case packet.StatusPing:
