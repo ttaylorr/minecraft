@@ -32,7 +32,7 @@ type (
 		Bold          bool `json:"bold"`
 		Italic        bool `json:"italic"`
 		Underlined    bool `json:"underlined"`
-		Strikethrough bool `json:"obfuscated"`
+		Strikethrough bool `json:"strikethrough"`
 		Obfuscated    bool `json:"obfuscated"`
 
 		Color Color `json:"color"`
