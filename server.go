@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"io"
+	"math/rand"
 	"net"
 
 	"github.com/ttaylorr/minecraft/protocol"
+	"github.com/ttaylorr/minecraft/protocol/packet"
 )
 
 func main() {
@@ -23,6 +24,24 @@ func handleConnection(c *protocol.Connection) {
 			return
 		}
 
-		fmt.Println(p)
+		switch t := p.(type) {
+		case packet.Handshake:
+			state := protocol.State(uint8(t.NextState))
+			c.SetState(state)
+		case packet.StatusRequest:
+			resp := packet.StatusResponse{}
+			resp.Status.Version.Name = "1.8.8"
+			resp.Status.Version.Protocol = 47
+			resp.Status.Players.Max = rand.Intn(100)
+			resp.Status.Players.Online = rand.Intn(101)
+			resp.Status.Description.Text = "Hello from Golang!"
+
+			c.Write(resp)
+		case packet.StatusPing:
+			pong := packet.StatusPong{}
+			pong.Payload = t.Payload
+
+			c.Write(pong)
+		}
 	}
 }
