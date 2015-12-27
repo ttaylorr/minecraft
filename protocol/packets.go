@@ -9,7 +9,7 @@ import (
 var (
 	Packets = map[packet.Direction]map[State]map[int]reflect.Type{
 		packet.DirectionServerbound: map[State]map[int]reflect.Type{
-			EmptyState: map[int]reflect.Type{
+			HandshakeState: map[int]reflect.Type{
 				0x00: reflect.TypeOf(packet.Handshake{}),
 			},
 			StatusState: map[int]reflect.Type{

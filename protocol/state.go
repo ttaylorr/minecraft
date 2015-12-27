@@ -3,6 +3,6 @@ package protocol
 type State uint8
 
 const (
-	EmptyState State = iota
+	HandshakeState State = iota
 	StatusState
 )
