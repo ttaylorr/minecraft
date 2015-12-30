@@ -1,9 +1,10 @@
 package server
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"fmt"
 	"net"
-	"sync"
 
 	"github.com/ttaylorr/minecraft/player"
 	"github.com/ttaylorr/minecraft/protocol"
@@ -13,12 +14,13 @@ import (
 type Server struct {
 	Handshaker *handshake.Handshaker
 
-	wg   *sync.WaitGroup
+	privateKey *rsa.PrivateKey
+
 	conn net.Listener
 }
 
-func New(wg *sync.WaitGroup, port int) (*Server, error) {
-	conn, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
+func New(port int) (*Server, error) {
+	conn, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return nil, err
 	}
@@ -26,21 +28,19 @@ func New(wg *sync.WaitGroup, port int) (*Server, error) {
 	s := &Server{
 		Handshaker: handshake.New(),
 
-		wg:   wg,
 		conn: conn,
 	}
+
+	s.GeneratePrivateKey()
 
 	return s, nil
 }
 
-func (s *Server) Start() {
-	go s.acceptConnections()
-}
-
-func (s *Server) acceptConnections() {
+func (s *Server) acceptConnections(errs chan error) {
 	for {
 		ln, err := s.conn.Accept()
 		if err != nil {
+			errs <- err
 			continue
 		}
 
@@ -49,6 +49,32 @@ func (s *Server) acceptConnections() {
 
 		s.Handshaker.OnPlayerJoin(player)
 	}
+}
 
-	s.wg.Done()
+func (s *Server) Start() error {
+	errs := make(chan error)
+	defer close(errs)
+
+	go s.acceptConnections(errs)
+
+	for {
+		select {
+		case err := <-errs:
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Server) GeneratePrivateKey() error {
+	priv, err := rsa.GenerateKey(rand.Reader, PrivateKeySize)
+	if err != nil {
+		return err
+	}
+
+	s.privateKey = priv
+	s.privateKey.Precompute()
+
+	return nil
 }
