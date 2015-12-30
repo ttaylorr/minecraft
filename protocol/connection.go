@@ -3,14 +3,9 @@ package protocol
 import (
 	"bufio"
 	"encoding/binary"
-	"errors"
 	"io"
 
 	"github.com/ttaylorr/minecraft/protocol/packet"
-)
-
-var (
-	ErrTooFewBytes = errors.New("too few bytes read")
 )
 
 // Connection represents a uni-directional connection from client to server.
@@ -71,13 +66,10 @@ func (c *Connection) packet() (*packet.Packet, error) {
 		return nil, err
 	}
 
-	// TODO(ttaylorr): extract this to a package `util`
 	buffer := make([]byte, size)
-	read, err := io.ReadAtLeast(r, buffer, int(size))
+	_, err = io.ReadAtLeast(r, buffer, int(size))
 	if err != nil {
 		return nil, err
-	} else if read < int(size) {
-		return nil, ErrTooFewBytes
 	}
 
 	id, offset := binary.Uvarint(buffer)

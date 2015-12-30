@@ -2,12 +2,17 @@ package protocol
 
 import (
 	"bytes"
+	"errors"
 	"reflect"
 	"sync"
 
 	"github.com/ttaylorr/minecraft/protocol/packet"
 	"github.com/ttaylorr/minecraft/protocol/types"
 	"github.com/ttaylorr/minecraft/util"
+)
+
+var (
+	UnknownPacketError = errors.New("unknown packet type")
 )
 
 // A Dealer manages a set of `Rule`s and is able to decode and encode arbitrary
@@ -35,7 +40,12 @@ func (d *Dealer) SetState(s State) {
 // data is decoded off of the stream and initialized into the corresponding
 // field. If no matching decoder is found, an error is returned.
 func (d *Dealer) Decode(p *packet.Packet) (v interface{}, err error) {
-	inst := reflect.New(d.GetHolderType(p)).Elem()
+	htype := d.GetHolderType(p)
+	if htype == nil {
+		return nil, UnknownPacketError
+	}
+
+	inst := reflect.New(htype).Elem()
 
 	data := bytes.NewBuffer(p.Data)
 
