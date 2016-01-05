@@ -4,7 +4,7 @@ import "github.com/ttaylorr/minecraft/protocol/types"
 
 type (
 	LoginStart struct {
-		Name types.String
+		Username types.String
 	}
 
 	LoginEncryptionRequest struct {

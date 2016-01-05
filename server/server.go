@@ -6,17 +6,20 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/ttaylorr/minecraft/player"
+	"github.com/ttaylorr/minecraft/listener"
 	"github.com/ttaylorr/minecraft/protocol"
+	"github.com/ttaylorr/minecraft/protocol/packet"
+	"github.com/ttaylorr/minecraft/server/auth"
 	"github.com/ttaylorr/minecraft/server/handshake"
 )
 
 type Server struct {
-	Handshaker *handshake.Handshaker
+	Handshaker    *handshake.Handshaker
+	Authenticator *auth.Authenticator
 
+	dispatch   *listener.Dispatcher
 	privateKey *rsa.PrivateKey
-
-	conn net.Listener
+	conn       net.Listener
 }
 
 func New(port int) (*Server, error) {
@@ -28,10 +31,12 @@ func New(port int) (*Server, error) {
 	s := &Server{
 		Handshaker: handshake.New(),
 
-		conn: conn,
+		dispatch: listener.NewDispatcher(),
+		conn:     conn,
 	}
 
 	s.GeneratePrivateKey()
+	s.Authenticator = auth.New(s.privateKey)
 
 	return s, nil
 }
@@ -45,9 +50,28 @@ func (s *Server) acceptConnections(errs chan error) {
 		}
 
 		client := protocol.NewConnection(ln)
-		player := player.New(client)
 
-		s.Handshaker.OnPlayerJoin(player)
+		p, err := client.Next()
+		if err != nil {
+			errs <- err
+			continue
+		}
+
+		if hsk, ok := p.(packet.Handshake); ok {
+			state := protocol.State(uint8(hsk.NextState))
+			client.SetState(state)
+
+			switch state {
+			case protocol.StatusState:
+				s.Handshaker.Handshake(client)
+			case protocol.LoginState:
+				player, err := s.Authenticator.Login(client)
+				if err != nil {
+					fmt.Println("unable to login player: %v", err)
+				}
+				s.dispatch.PlayerJoin(player)
+			}
+		}
 	}
 }
 
