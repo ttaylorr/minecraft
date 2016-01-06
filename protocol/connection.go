@@ -2,6 +2,8 @@ package protocol
 
 import (
 	"bufio"
+	"crypto/aes"
+	"crypto/cipher"
 	"encoding/binary"
 	"io"
 
@@ -10,14 +12,16 @@ import (
 
 // Connection represents a uni-directional connection from client to server.
 type Connection struct {
-	d  *Dealer
-	rw io.ReadWriter
+	d *Dealer
+
+	in  io.Reader
+	out io.Writer
 }
 
 // NewConnection serves as the builder function for type Connection. It takes in
 // a reader which, when read from, yeilds data sent by the "client".
 func NewConnection(rw io.ReadWriter) *Connection {
-	return &Connection{d: NewDealer(), rw: rw}
+	return &Connection{d: NewDealer(), in: rw, out: rw}
 }
 
 func (c *Connection) SetState(state State) {
@@ -39,7 +43,7 @@ func (c *Connection) Write(h packet.Holder) (int, error) {
 		return -1, nil
 	}
 
-	return c.rw.Write(data)
+	return c.out.Write(data)
 }
 
 // Next reads and decodes the next Packet on the stream. Packets are expected to
@@ -59,7 +63,7 @@ func (c *Connection) Write(h packet.Holder) (int, error) {
 // If an error is experienced in reading the packet from the io.Reader `r`, then
 // a nil pointer will be returned and the error will be propogated up.
 func (c *Connection) packet() (*packet.Packet, error) {
-	r := bufio.NewReader(c.rw)
+	r := bufio.NewReader(c.in)
 
 	size, err := binary.ReadUvarint(r)
 	if err != nil {
@@ -79,4 +83,23 @@ func (c *Connection) packet() (*packet.Packet, error) {
 		Direction: packet.DirectionServerbound,
 		Data:      buffer[offset:],
 	}, nil
+}
+
+func (c *Connection) Encrypt(secret []byte) error {
+	aes, err := aes.NewCipher(secret)
+	if err != nil {
+		return err
+	}
+
+	c.in = cipher.StreamReader{
+		R: c.in,
+		S: newCFB8Decrypt(aes, secret),
+	}
+
+	c.out = cipher.StreamWriter{
+		W: c.out,
+		S: newCFB8Encrypt(aes, secret),
+	}
+
+	return nil
 }

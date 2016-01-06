@@ -24,7 +24,7 @@ type (
 	}
 
 	LoginSetCompression struct {
-		Threshold types.UVarint
+		Threshold types.Varint
 	}
 )
 
