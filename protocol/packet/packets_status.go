@@ -5,36 +5,35 @@ import (
 	"github.com/ttaylorr/minecraft/protocol/types"
 )
 
-type StatusRequest struct{}
+type (
+	StatusRequest struct{}
 
-func (r *StatusRequest) ID() int { return 0x00 }
+	StatusResponse struct {
+		Status struct {
+			Version struct {
+				Name     string `json:"name"`
+				Protocol int    `json:"protocol"`
+			} `json:"version"`
 
-type StatusResponse struct {
-	Status struct {
-		Version struct {
-			Name     string `json:"name"`
-			Protocol int    `json:"protocol"`
-		} `json:"version"`
+			Players struct {
+				Max    int `json:"max"`
+				Online int `json:"online"`
+			} `json:"players"`
 
-		Players struct {
-			Max    int `json:"max"`
-			Online int `json:"online"`
-		} `json:"players"`
-
-		Description chat.TextComponent `json:"description"`
+			Description chat.TextComponent `json:"description"`
+		}
 	}
-}
 
+	StatusPing struct {
+		Payload types.Long
+	}
+
+	StatusPong struct {
+		Payload types.Long
+	}
+)
+
+func (r StatusRequest) ID() int  { return 0x00 }
 func (r StatusResponse) ID() int { return 0x00 }
-
-type StatusPing struct {
-	Payload types.Long
-}
-
-func (p StatusPing) ID() int { return 0x01 }
-
-type StatusPong struct {
-	Payload types.Long
-}
-
-func (p StatusPong) ID() int { return 0x01 }
+func (p StatusPing) ID() int     { return 0x01 }
+func (p StatusPong) ID() int     { return 0x01 }

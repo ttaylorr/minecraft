@@ -1,12 +1,13 @@
 package server
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
 	"net"
+	"reflect"
 
 	"github.com/ttaylorr/minecraft/listener"
+	"github.com/ttaylorr/minecraft/player"
 	"github.com/ttaylorr/minecraft/protocol"
 	"github.com/ttaylorr/minecraft/protocol/packet"
 	"github.com/ttaylorr/minecraft/server/auth"
@@ -28,55 +29,24 @@ func New(port int) (*Server, error) {
 		return nil, err
 	}
 
-	s := &Server{
-		Handshaker: handshake.New(),
-
-		dispatch: listener.NewDispatcher(),
-		conn:     conn,
-	}
-
-	s.GeneratePrivateKey()
-	auth, err := auth.New(s.privateKey)
+	priv, err := NewPrivateKey()
 	if err != nil {
 		return nil, err
 	}
-	s.Authenticator = auth
 
-	return s, nil
-}
-
-func (s *Server) acceptConnections(errs chan error) {
-	for {
-		ln, err := s.conn.Accept()
-		if err != nil {
-			errs <- err
-			continue
-		}
-
-		client := protocol.NewConnection(ln)
-
-		p, err := client.Next()
-		if err != nil {
-			errs <- err
-			continue
-		}
-
-		if hsk, ok := p.(packet.Handshake); ok {
-			state := protocol.State(uint8(hsk.NextState))
-			client.SetState(state)
-
-			switch state {
-			case protocol.StatusState:
-				s.Handshaker.Handshake(client)
-			case protocol.LoginState:
-				player, err := s.Authenticator.Login(client)
-				if err != nil {
-					fmt.Println("unable to login player: %v", err)
-				}
-				s.dispatch.PlayerJoin(player)
-			}
-		}
+	auth, err := auth.New(priv)
+	if err != nil {
+		return nil, err
 	}
+
+	return &Server{
+		Handshaker:    handshake.New(),
+		Authenticator: auth,
+
+		dispatch:   listener.NewDispatcher(),
+		privateKey: priv,
+		conn:       conn,
+	}, nil
 }
 
 func (s *Server) Start() error {
@@ -95,14 +65,60 @@ func (s *Server) Start() error {
 	return nil
 }
 
-func (s *Server) GeneratePrivateKey() error {
-	priv, err := rsa.GenerateKey(rand.Reader, PrivateKeySize)
+func (s *Server) acceptConnections(errs chan error) {
+	for {
+		// TODO: move to goroutine
+		client, err := s.nextConnection()
+		if err != nil {
+			errs <- err
+			continue
+		}
+
+		player, err := s.handshakeOrAuth(client)
+		if err != nil {
+			errs <- err
+			continue
+		} else if player != nil {
+			s.dispatch.PlayerJoin(player)
+		}
+	}
+}
+
+func (s *Server) nextConnection() (*protocol.Connection, error) {
+	ln, err := s.conn.Accept()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	s.privateKey = priv
-	s.privateKey.Precompute()
+	return protocol.NewConnection(ln), nil
+}
 
-	return nil
+func (s *Server) handshakeOrAuth(client *protocol.Connection) (*player.Player, error) {
+	p, err := client.Next()
+	if err != nil {
+		return nil, err
+	}
+
+	hsk, ok := p.(packet.Handshake)
+	if !ok {
+		return nil, fmt.Errorf("expected packet.Handshake, received %s", reflect.TypeOf(p))
+	}
+
+	state := protocol.State(uint8(hsk.NextState))
+	client.SetState(state)
+
+	switch state {
+	case protocol.HandshakeState:
+		s.Handshaker.Handshake(client)
+		return nil, nil
+	case protocol.LoginState:
+		player, err := s.Authenticator.Login(client)
+		if err != nil {
+			return nil, fmt.Errorf("unable to login player: %s", err)
+		}
+
+		return player, nil
+	default:
+		return nil, fmt.Errorf("neither handshake nor auth state received")
+	}
 }

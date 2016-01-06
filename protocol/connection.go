@@ -24,11 +24,16 @@ func NewConnection(rw io.ReadWriter) *Connection {
 	return &Connection{d: NewDealer(), in: rw, out: rw}
 }
 
+// SetState changes the protocol state (see https://wiki.vg) of the connection
+// between the Server and Client. StateChagnes are proxied down into the Dealer,
+// and happen in a sync fashion.
 func (c *Connection) SetState(state State) {
 	c.d.SetState(state)
 }
 
-func (c *Connection) Next() (interface{}, error) {
+// Next will read and return the Go struct representing the data contained in
+// the next packet.
+func (c *Connection) Next() (packet.Holder, error) {
 	p, err := c.packet()
 	if err != nil {
 		return nil, err
@@ -58,7 +63,8 @@ func (c *Connection) Write(h packet.Holder) (int, error) {
 //   | Data       | []byte     |                                    |
 //
 // With compression:
-// ...
+// ... (TODO)
+//
 //
 // If an error is experienced in reading the packet from the io.Reader `r`, then
 // a nil pointer will be returned and the error will be propogated up.
@@ -85,6 +91,10 @@ func (c *Connection) packet() (*packet.Packet, error) {
 	}, nil
 }
 
+// Encrypt begins encrypting the connection with an AES/CFB8 cipher as according
+// to the most-current Minecraft protocol. An AES cipher is seeded from the
+// de-encrypted shared-secret token, and the initial vector of both the reader
+// and writer are set to that same shared-secret.
 func (c *Connection) Encrypt(secret []byte) error {
 	aes, err := aes.NewCipher(secret)
 	if err != nil {

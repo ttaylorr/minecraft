@@ -100,12 +100,13 @@ func (a *Authenticator) onResponse(c *protocol.Connection, username string,
 	if !bytes.Equal(verify, check) {
 		return errors.New("verification token not equal")
 	}
-	c.Encrypt(secret)
 
 	session, err := a.Yggdrasil.GetSession(username, secret)
 
 	uuid := session.ID
 	uuid = fmt.Sprintf("%s-%s-%s-%s-%s", uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:32])
+
+	c.Encrypt(secret)
 
 	if _, err = c.Write(mc.LoginSuccess{
 		UUID:     types.String(uuid),
