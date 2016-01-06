@@ -3,7 +3,6 @@ package protocol
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"reflect"
 	"sync"
 
@@ -109,7 +108,5 @@ func (d *Dealer) GetHolderType(p *packet.Packet) reflect.Type {
 	d.smu.RLock()
 	defer d.smu.RUnlock()
 
-	typ := GetPacket(p.Direction, d.State, p.ID)
-	fmt.Println(p.Direction, d.State, p.ID, typ)
-	return typ
+	return GetPacket(p.Direction, d.State, p.ID)
 }

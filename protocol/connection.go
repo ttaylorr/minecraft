@@ -3,7 +3,6 @@ package protocol
 import (
 	"bufio"
 	"encoding/binary"
-	"fmt"
 	"io"
 
 	"github.com/ttaylorr/minecraft/protocol/packet"
@@ -60,7 +59,6 @@ func (c *Connection) Write(h packet.Holder) (int, error) {
 // If an error is experienced in reading the packet from the io.Reader `r`, then
 // a nil pointer will be returned and the error will be propogated up.
 func (c *Connection) packet() (*packet.Packet, error) {
-	fmt.Println("attempting read")
 	r := bufio.NewReader(c.rw)
 
 	size, err := binary.ReadUvarint(r)

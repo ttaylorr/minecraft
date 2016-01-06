@@ -36,7 +36,11 @@ func New(port int) (*Server, error) {
 	}
 
 	s.GeneratePrivateKey()
-	s.Authenticator = auth.New(s.privateKey)
+	auth, err := auth.New(s.privateKey)
+	if err != nil {
+		return nil, err
+	}
+	s.Authenticator = auth
 
 	return s, nil
 }
