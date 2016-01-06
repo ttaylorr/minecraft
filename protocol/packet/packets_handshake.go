@@ -9,6 +9,4 @@ type Handshake struct {
 	NextState       types.UVarint
 }
 
-func (h Handshake) ID() int {
-	return 0x00
-}
+func (h Handshake) ID() int { return 0x00 }

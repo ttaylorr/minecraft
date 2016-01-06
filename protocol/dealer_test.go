@@ -15,6 +15,17 @@ func TestDecoderInitialization(t *testing.T) {
 	assert.IsType(t, d, &protocol.Dealer{})
 }
 
+func TestErrorForUnknownPacketType(t *testing.T) {
+	d := protocol.NewDealer()
+	p := &packet.Packet{
+		ID: 0x99,
+	}
+
+	v, err := d.Decode(p)
+	assert.Nil(t, v)
+	assert.Equal(t, err, protocol.UnknownPacketError)
+}
+
 func TestPacketDecoding(t *testing.T) {
 	d := protocol.NewDealer()
 	p := &packet.Packet{
